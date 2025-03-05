@@ -22,3 +22,11 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+input {
+  @apply w-full rounded-md text-black h-12 px-3 border bg-white;
+}
+
+button {
+  @apply bg-white text-black rounded-md px-6 py-3 font-bold
+}
