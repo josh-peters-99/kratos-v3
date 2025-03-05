@@ -51,9 +51,9 @@ export default function SignUp() {
                     required 
                 />
 
-                <p>Already have an account? <Link href="/auth/signin">Sign In</Link></p>
+                <p>Already have an account? <Link href="/auth/signin" className="underline">Sign In</Link></p>
 
-                <button type="submit">Sign Up</button>
+                <button type="submit" className="bg-white text-black rounded-md px-6 py-3 font-bold">Sign Up</button>
             </form>
         </section>
     )

@@ -33,8 +33,8 @@ export default function SignIn() {
                     placeholder="Password" 
                     required
                 />
-                <p>Don't have an account? <Link href="/auth/signup">Sign Up</Link></p>
-                <button type="submit">Sign In</button>
+                <p>Don't have an account? <Link href="/auth/signup" className="underline">Sign Up</Link></p>
+                <button type="submit" className="bg-white text-black rounded-md px-6 py-3 font-bold">Sign In</button>
             </form>
         </section>
     );

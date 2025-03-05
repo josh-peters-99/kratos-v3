@@ -96,7 +96,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, triggerR
                         {title && <h2 className="text-xl font-bold mt-3">{title}</h2>}
 
                         {/* Content */}
-                        <div className="mt-4 flex flex-col gap-3">{children}</div>
+                        <div className="mt-4 flex flex-col gap-7">{children}</div>
                     </div>
                 </div>
             ) : (
@@ -104,13 +104,13 @@ export default function BottomSheet({ isOpen, onClose, title, children, triggerR
                 <div 
                     ref={dropdownRef} 
                     style={{ top: position.top, left: position.left, width: position.width }} 
-                    className="absolute bg-background text-white rounded-md shadow-lg p-4 z-50 border border-gray-400"
+                    className="absolute bg-black text-white rounded-md shadow-lg p-4 z-50 border border-gray-400"
                 >
                     {/* Title */}
                     {title && <h2 className="text-lg font-bold mb-3">{title}</h2>}
 
                     {/* Content */}
-                    <div className="flex flex-col gap-2">{children}</div>
+                    <div className="flex flex-col gap-3">{children}</div>
                 </div>
             )}
         </>

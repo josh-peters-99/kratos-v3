@@ -75,11 +75,18 @@ export default function Navbar() {
                                     signOut();
                                     toggleMenu();
                                 }}
+                                className="bg-white text-black rounded-md px-6 py-3 font-bold"
                             >
                                 Sign Out
                             </button>
                         ) : (
-                            <Link href="/auth/signin" onClick={toggleMenu}>Sign In</Link>
+                            <Link 
+                                href="/auth/signin" 
+                                onClick={toggleMenu}
+                                className="bg-white text-black rounded-md px-6 py-3 font-bold"
+                            >
+                                Sign In
+                            </Link>
                         )
                     )}
                 </div>
