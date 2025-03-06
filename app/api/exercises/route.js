@@ -23,3 +23,21 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+    const workoutId = searchParams.get("workoutId");
+
+    if (!workoutId) {
+      return NextResponse.json({ error: "Workout ID is required" }, { status: 400 });
+    }
+
+    const result = await Exercise.deleteMany({ workout: workoutId });
+
+    return NextResponse.json({ message: "Exercises deleted", deletedCount: result.deletedCount }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

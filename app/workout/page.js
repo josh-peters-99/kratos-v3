@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWorkouts, createWorkout, updateWorkout, deleteWorkout } from "@/lib/api/workouts";
+import { fetchExercises, createExercise, updateExercise, deleteExercise, deleteExercisesByWorkout } from "@/lib/api/exercises";
 import Options from "@/components/ui/Options";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
@@ -13,6 +14,9 @@ export default function Workout() {
     const [workoutDate, setWorkoutDate] = useState("");
     const [workout, setWorkout] = useState(null);
     const [notes, setNotes] = useState("");
+
+    const [exercises, setExercises] = useState([]);
+
     const [typingTimeout, setTypingTimeout] = useState(null);
     const [mounted, setMounted] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
@@ -38,6 +42,13 @@ export default function Workout() {
                 const workouts = await fetchWorkouts();
                 const existingWorkout = workouts.find(w => w._id === storedWorkoutId);
 
+                // Fetch existing workouts with matching workout ID's from DB
+                const exercises = await fetchExercises(storedWorkoutId);
+                if (exercises.length != 0) {
+                    console.log(exercises);
+                    setExercises(exercises);
+                }
+
                 if (existingWorkout) {
                     setWorkout(existingWorkout);
                     setTitle(existingWorkout.title);
@@ -56,6 +67,8 @@ export default function Workout() {
             setWorkoutDate(newWorkout.date);
             setNotes(newWorkout.notes);
             sessionStorage.setItem("tempWorkoutId", newWorkout._id);
+            // Created a new exercise when a new workout is created
+            const newExercise = await createExercise({ workout: newWorkout._id, name: "" });
         }
 
         loadOrCreateWorkout();
@@ -85,6 +98,8 @@ export default function Workout() {
     async function handleDiscardWorkout() {
         if (workout) {
             await deleteWorkout(workout._id);
+            // Delete exercises associated with workout
+            await deleteExercisesByWorkout(workout._id);
         }
         sessionStorage.removeItem("tempWorkoutId"); // Clear session storage
         router.push("/");
