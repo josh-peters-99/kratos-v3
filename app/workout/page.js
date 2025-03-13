@@ -46,6 +46,7 @@ export default function Workout() {
                 const exercises = await fetchExercises(storedWorkoutId);
                 if (exercises.length != 0) {
                     console.log(exercises);
+                    console.log(storedWorkoutId);
                     setExercises(exercises);
                 }
 
@@ -69,6 +70,7 @@ export default function Workout() {
             sessionStorage.setItem("tempWorkoutId", newWorkout._id);
             // Created a new exercise when a new workout is created
             const newExercise = await createExercise({ workout: newWorkout._id, name: "" });
+            setExercises([...exercises, newExercise]);
         }
 
         loadOrCreateWorkout();
@@ -103,6 +105,12 @@ export default function Workout() {
         }
         sessionStorage.removeItem("tempWorkoutId"); // Clear session storage
         router.push("/");
+    }
+
+    async function handleAddExercise() {
+        if (!workout) return;
+        const newExercise = await createExercise({ workout: workout._id, name: "" });
+        setExercises(prev => [...prev, newExercise]);
     }
 
     async function handleSubmit(event) {
@@ -144,6 +152,20 @@ export default function Workout() {
                         required
                     />
                 </div>
+                {exercises.map((exercise, index) => (
+                    <div key={index} className="">
+                        <label>Exercise Name</label>
+                        <input 
+                            type="text"
+                            value={exercise.name}
+                            onChange={(e) => {
+                                const updateExercises = [...exercises];
+                                updateExercises[index].name = e.target.value;
+                                setExercises(updateExercises);
+                            }}
+                        />
+                    </div>
+                ))}
                 <div className="flex flex-col">
                     <label>Notes</label>
                     <textarea
@@ -168,6 +190,12 @@ export default function Workout() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
                     </svg>
                     Reset Workout
+                </button>
+                <button className="w-full text-left flex bg-background items-center text-white px-0 cursor-pointer" onClick={handleAddExercise}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 mr-2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    Add Exercise
                 </button>
                 <button className="w-full text-left flex bg-background items-center text-white px-0 cursor-pointer" onClick={() => setShowConfirmDiscard(true)}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 mr-2">
