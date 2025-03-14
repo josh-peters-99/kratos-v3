@@ -88,6 +88,19 @@ export default function Workout() {
         }
     }, [title, workoutDate, notes]);
 
+    useEffect(() => {
+        const timeoutIds = exercises.map((exercise, index) => {
+            if (!exercise._id) return null; // Skip if no valid exercise ID
+    
+            return setTimeout(async () => {
+                await updateExercise(exercise._id, { name: exercise.name });
+            }, 500); // 500ms debounce time
+        });
+    
+        return () => timeoutIds.forEach((id) => id && clearTimeout(id));
+    }, [exercises]);
+    
+
     function handleResetWorkout() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
