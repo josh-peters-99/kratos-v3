@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWorkouts, createWorkout, updateWorkout, deleteWorkout } from "@/lib/api/workouts";
 import { fetchExercises, createExercise, updateExercise, deleteExercise, deleteExercisesByWorkout } from "@/lib/api/exercises";
+import { fetchSets, createSet, updateSet, deleteSet, deleteSetsByWorkout } from "@/lib/api/sets";
 import Options from "@/components/ui/Options";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
@@ -14,9 +15,8 @@ export default function Workout() {
     const [workoutDate, setWorkoutDate] = useState("");
     const [workout, setWorkout] = useState(null);
     const [notes, setNotes] = useState("");
-
     const [exercises, setExercises] = useState([]);
-
+    const [sets, setSets] = useState([]);
     const [typingTimeout, setTypingTimeout] = useState(null);
     const [mounted, setMounted] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
@@ -42,14 +42,21 @@ export default function Workout() {
                 const workouts = await fetchWorkouts();
                 const existingWorkout = workouts.find(w => w._id === storedWorkoutId);
 
-                // Fetch existing workouts with matching workout ID's from DB
+                // Fetch existing exercises with matching workout ID's from DB
                 const exercises = await fetchExercises(storedWorkoutId);
                 if (exercises.length != 0) {
-                    console.log(exercises);
-                    console.log(storedWorkoutId);
+                    // console.log(exercises);
                     setExercises(exercises);
                 }
-
+                
+                // Fetch existing sets with matching workout ID's from DB
+                const sets = await fetchSets(storedWorkoutId);
+                if (sets.length != 0) {
+                    // console.log(sets);
+                    setSets(sets);
+                }
+                
+                // Fetch existing workouts with matching workout ID's from DB
                 if (existingWorkout) {
                     setWorkout(existingWorkout);
                     setTitle(existingWorkout.title);
@@ -68,9 +75,14 @@ export default function Workout() {
             setWorkoutDate(newWorkout.date);
             setNotes(newWorkout.notes);
             sessionStorage.setItem("tempWorkoutId", newWorkout._id);
-            // Created a new exercise when a new workout is created
+
+            // Create a new exercise when a new workout is created
             const newExercise = await createExercise({ workout: newWorkout._id, name: "" });
             setExercises([...exercises, newExercise]);
+
+            // Create a new set when a new exercise is created
+            const newSet = await createSet({ workout: newWorkout._id, exercise: newExercise._id, count: 1, reps: 0, weight: 0 });
+            setSets([...sets, newSet]);
         }
 
         loadOrCreateWorkout();
@@ -99,6 +111,18 @@ export default function Workout() {
     
         return () => timeoutIds.forEach((id) => id && clearTimeout(id));
     }, [exercises]);
+
+    useEffect(() => {
+        const timeoutIds = sets.map((set, index) => {
+            if (!set._id) return null;
+
+            return setTimeout(async () => {
+                await updateSet(set._id, { reps: set.reps, weight: set.weight });
+            }, 500);
+        });
+
+        return () => timeoutIds.forEach((id) => id && clearTimeout(id));
+    }, [sets]);
     
 
     function handleResetWorkout() {
@@ -113,8 +137,12 @@ export default function Workout() {
     async function handleDiscardWorkout() {
         if (workout) {
             await deleteWorkout(workout._id);
+
             // Delete exercises associated with workout
             await deleteExercisesByWorkout(workout._id);
+
+            // Delete sets associated with workout
+            await deleteSetsByWorkout(workout._id);
         }
         sessionStorage.removeItem("tempWorkoutId"); // Clear session storage
         router.push("/");
@@ -123,7 +151,22 @@ export default function Workout() {
     async function handleAddExercise() {
         if (!workout) return;
         const newExercise = await createExercise({ workout: workout._id, name: "" });
+        const newSet = await createSet({ workout: workout._id, exercise: newExercise._id, count: 1, reps: 0, weight: 0 });
         setExercises(prev => [...prev, newExercise]);
+        setSets(prev => [...prev, newSet]);
+    }
+
+    async function handleAddSet(exerciseId) {
+        if (!workout || !exerciseId) return;
+        const newSet = await createSet({ 
+            workout: workout._id,
+            exercise: exerciseId,
+            count: sets.filter(set => set.exercise === exerciseId).length + 1,
+            reps: 0,
+            weight: 0
+         });
+
+         setSets(prev => [...prev, newSet]);
     }
 
     async function handleSubmit(event) {
@@ -166,17 +209,62 @@ export default function Workout() {
                     />
                 </div>
                 {exercises.map((exercise, index) => (
-                    <div key={index} className="">
+                    <div key={exercise._id} className="bg-gray-700 p-3">
                         <label>Exercise Name</label>
                         <input 
                             type="text"
-                            value={exercise.name}
+                            value={exercise.name || ""}
                             onChange={(e) => {
+                                const updatedName = e.target.value;
                                 const updateExercises = [...exercises];
-                                updateExercises[index].name = e.target.value;
+                                updateExercises[index].name = updatedName;
                                 setExercises(updateExercises);
                             }}
                         />
+                        <div className="flex w-full justify-between">
+                            <p>Set</p>
+                            <p>Reps</p>
+                            <p>Weight</p>
+                        </div>
+                        {sets
+                            .filter(set => set.exercise === exercise._id)
+                            .map((set, setIndex) => (
+                                <div key={setIndex} className="flex w-full justify-evenly gap-8">
+                                    <label>{set.count}</label>
+                                    <input
+                                        className="text-center"
+                                        type="text"
+                                        value={set.reps || ""}
+                                        onChange={(e) => {
+                                            const updatedSets = sets.map(s =>
+                                                s._id === set._id ? {...s, reps: e.target.value } : s
+                                            );
+                                            setSets(updatedSets)
+                                        }}
+                                    />
+                                    <input 
+                                        className="text-center"
+                                        type="text"
+                                        value={set.weight || ""}
+                                        onChange={(e) => {
+                                            const updatedSets = sets.map(s =>
+                                                s._id === set._id ? {...s, weight: e.target.value } : s
+                                            );
+                                            setSets(updatedSets)
+                                        }}
+                                    />
+                                </div>
+                        ))}
+                        <div className="flex w-full justify-center pt-5">
+                            <button 
+                                className="bg-black p-3 rounded-md"
+                                onClick={() => handleAddSet(exercise._id)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 ))}
                 <div className="flex flex-col">

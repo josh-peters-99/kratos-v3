@@ -24,12 +24,11 @@ export async function POST(req) {
 //   }
 // }
 
-// WORKING HERE
 export async function GET(req) {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
-    const workoutId = searchParams.get("workoutId");
+    const workoutId = searchParams.get("workout");
 
     if (!workoutId) {
       return NextResponse.json({ error: "Workout ID is required" }, { status: 400 });

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function PUT(req, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const updatedSet = await Set.findByIdAndUpdate(id, await req.json(), { new: true });
     return NextResponse.json(updatedSet, { status: 200 });
   } catch (error) {
@@ -16,7 +16,7 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     await Set.findByIdAndDelete(id);
     return NextResponse.json({ message: "Set deleted" }, { status: 200 });
   } catch (error) {
