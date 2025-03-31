@@ -33,7 +33,7 @@ export default function WorkoutCard({ workoutId, workoutTitle, workoutDate }) {
     const visibleExercises = expanded ? exercises : exercises.slice(0, 3);
 
     async function handleEditWorkout() {
-        router.push(`/edit-workout/${workoutId}`)
+        router.push(`/workouts/${workoutId}`)
       }
 
     return (
