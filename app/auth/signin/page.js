@@ -16,13 +16,14 @@ export default function SignIn() {
     return (
         <section className="w-full flex flex-col justify-center items-center px-10 py-5">
             <h1>Sign In</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col w-full gap-8 md:w-[500px]">
+            <form onSubmit={handleSubmit} className="flex flex-col w-full gap-6 md:w-[500px] mt-2">
                 <input 
                     type="email" 
                     value={email} 
                     name="email"
                     onChange={(e) => setEmail(e.target.value)} 
                     placeholder="Email"
+                    className="bg-gray-900 w-full h-12 rounded-sm"
                     required 
                 />
                 <input 
@@ -30,7 +31,8 @@ export default function SignIn() {
                     value={password} 
                     name="password"
                     onChange={(e) => setPassword(e.target.value)} 
-                    placeholder="Password" 
+                    placeholder="Password"
+                    className="bg-gray-900 w-full h-12 rounded-sm"
                     required
                 />
                 <p>Don't have an account? <Link href="/auth/signup" className="underline">Sign Up</Link></p>

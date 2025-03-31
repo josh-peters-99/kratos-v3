@@ -19,12 +19,18 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const workoutId = searchParams.get("workout");
+    const exerciseId = searchParams.get("exercise");
 
-    if (!workoutId) {
-      return NextResponse.json({ error: "Workout ID is required" }, { status: 400 });
+    if (!workoutId && !exerciseId) {
+      return NextResponse.json({ error: "Workout ID or Exercise ID is required" }, { status: 400 });
     }
 
-    const sets = await Set.find({ workout: workoutId });
+    let query = {};
+    if (workoutId) query.workout = workoutId;
+    if (exerciseId) query.exercise = exerciseId;
+
+    // const sets = await Set.find({ workout: workoutId });
+    const sets = await Set.find(query);
 
     return NextResponse.json(sets, { status: 200 });
   } catch (error) {

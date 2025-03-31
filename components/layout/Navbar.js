@@ -31,14 +31,14 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex gap-6 text-lg font-bold items-center">
+            <div className="hidden md:flex gap-6 text-lg items-center">
                 <Link href="/">Home</Link>
                 <Link href="/workout">Workout</Link>
                 {mounted && status !== "loading" && (
                     session ? (
-                        <button onClick={() => signOut()}>Sign Out</button>
+                        <button onClick={() => signOut()} className="cursor-pointer">Sign Out</button>
                     ) : (
-                        <Link href="/auth/signin">Sign In</Link>
+                        <Link href="/auth/signin" className="cursor-pointer">Sign In</Link>
                     )
                 )}
             </div>
@@ -64,7 +64,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Overlay */}
             {menuOpen && (
-                <div className="fixed top-0 right-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 text-white font-bold text-2xl z-40">
+                <div className="fixed top-0 right-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 text-white text-2xl z-40">
                     <Link href="/" onClick={toggleMenu}>Home</Link>
                     <Link href="/workout" onClick={toggleMenu}>Log Workout</Link>
 
