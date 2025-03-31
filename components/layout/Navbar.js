@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { createWorkout } from "@/lib/api/workouts";
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const { data: session, status } = useSession();
     const [mounted, setMounted] = useState(false);
+    const router = useRouter();
 
     // Ensure component is mounted before accessing session to prevent hydration errors
     useEffect(() => {
@@ -20,12 +23,20 @@ export default function Navbar() {
         document.body.style.overflow = menuOpen ? "auto" : "hidden";
     };
 
+    const handleCreateWorkout = async () => {
+        try {
+            const newWorkout = await createWorkout({ title: "New Workout", date: new Date(), notes: "" });
+            router.push(`/workouts/${newWorkout._id}`);
+        } catch (error) {
+            console.error("Failed to create workout:", error);
+        }
+    }
+
     return (
         <nav className="flex w-full justify-between items-center px-6 h-[80px]">
             {/* Logo */}
             <Link href="/" className="flex items-center cursor-pointer">
                 <div className="flex items-center">
-                    {/* <img src="/greek-emperor.png" width={75} height={75} alt="Logo" /> */}
                     <h1>KRATOS</h1>
                 </div>
             </Link>
@@ -33,7 +44,8 @@ export default function Navbar() {
             {/* Desktop Menu */}
             <div className="hidden md:flex gap-6 text-lg items-center">
                 <Link href="/">Home</Link>
-                <Link href="/workout">Workout</Link>
+                {/* <Link href="/workouts/new">Log Workout</Link> */}
+                <button onClick={handleCreateWorkout} className="cursor-pointer">Log Workout</button>
                 {mounted && status !== "loading" && (
                     session ? (
                         <button onClick={() => signOut()} className="cursor-pointer">Sign Out</button>
@@ -46,10 +58,6 @@ export default function Navbar() {
             {/* Mobile Menu Toggle */}
             <div className="md:hidden z-50" onClick={toggleMenu}>
                 {menuOpen ? (
-                    // Close Icon
-                    // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" className="w-8 h-8 text-white fill-current absolute top-6 right-6 z-50">
-                    //     <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
-                    // </svg>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8 absolute top-6 right-6 z-50">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
@@ -66,7 +74,10 @@ export default function Navbar() {
             {menuOpen && (
                 <div className="fixed top-0 right-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 text-white text-2xl z-40">
                     <Link href="/" onClick={toggleMenu}>Home</Link>
-                    <Link href="/workout" onClick={toggleMenu}>Log Workout</Link>
+                    {/* <Link href="/workout" onClick={toggleMenu}>Log Workout</Link> */}
+                    <button onClick={() => { handleCreateWorkout(); toggleMenu(); }} className="cursor-pointer">
+                        Log Workout
+                    </button>
 
                     {mounted && status !== "loading" && (
                         session ? (
