@@ -23,16 +23,50 @@ export async function POST(req) {
 }
 
 export async function GET(req) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  
+    try {
+        await connectDB();
+
+        // Parse the query parameters
+        const { searchParams } = new URL(req.url);
+        const workoutId = searchParams.get("workout"); // Get the workout ID from query params
+
+        if (workoutId) {
+            // Fetch a single workout by its ID
+            const workout = await Workout.findOne({ _id: workoutId, user: session.user.id });
+
+            if (!workout) {
+                return NextResponse.json({ error: "Workout not found" }, { status: 404 });
+            }
+
+            return NextResponse.json(workout);
+        } else {
+            // Fetch all workout for the user
+            const workouts = await Workout.find({ user: session.user.id });
+            return NextResponse.json(workouts);
+        }
+        const workouts = await Workout.find({ user: session.user.id });
+        return NextResponse.json(workouts);
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to fetch workouts" }, { status: 500 });
+    }
   }
 
-  try {
-      await connectDB();
-      const workouts = await Workout.find({ user: session.user.id });
-      return NextResponse.json(workouts);
-  } catch (error) {
-      return NextResponse.json({ error: "Failed to fetch workouts" }, { status: 500 });
-  }
-}
+// export async function GET(req) {
+//   const session = await getServerSession(authOptions);
+//   if (!session) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//   }
+
+//   try {
+//       await connectDB();
+//       const workouts = await Workout.find({ user: session.user.id });
+//       return NextResponse.json(workouts);
+//   } catch (error) {
+//       return NextResponse.json({ error: "Failed to fetch workouts" }, { status: 500 });
+//   }
+// }

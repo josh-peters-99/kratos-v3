@@ -14,16 +14,6 @@ export async function POST(req) {
   }
 }
 
-// export async function GET() {
-//   try {
-//     await connectDB();
-//     const exercises = await Exercise.find().populate("workout");
-//     return NextResponse.json(exercises, { status: 200 });
-//   } catch (error) {
-//     return NextResponse.json({ error: error.message }, { status: 500 });
-//   }
-// }
-
 export async function GET(req) {
   try {
     await connectDB();
