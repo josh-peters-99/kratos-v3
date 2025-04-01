@@ -18,10 +18,19 @@ export default function Navbar() {
     }, []);
 
     // Toggle menu state
+    // const toggleMenu = () => {
+    //     setMenuOpen(!menuOpen);
+    //     document.body.style.overflow = menuOpen ? "auto" : "hidden";
+    // };
+
     const toggleMenu = () => {
-        setMenuOpen(!menuOpen);
-        document.body.style.overflow = menuOpen ? "auto" : "hidden";
-    };
+        setMenuOpen((prev) => {
+            const newState = !prev;
+            document.body.style.overflow = newState ? "hidden" : "auto";
+            document.body.style.width = newState ? "100vw" : "auto"; // Prevent sideways scrolling
+            return newState;
+        });
+    };    
 
     const handleCreateWorkout = async () => {
         try {

@@ -2,21 +2,26 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
+    const router = useRouter();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [firstname, setFirstname] = useState("");
+    const [lastname, setLastname] = useState("");
     const [password, setPassword] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const res = await fetch("/api/auth/signup", {
             method: "POST",
-            body: JSON.stringify({ username, email, password }),
+            body: JSON.stringify({ username, firstname, lastname, email, password }),
         });
 
         if (res.ok) {
-            alert("Signup successful. You can now sign in.");
+            // alert("Signup successful. You can now sign in.");
+            router.push("/auth/signin");
         } else {
             alert("Signup failed.");
         }
@@ -32,6 +37,24 @@ export default function SignUp() {
                     name="username"
                     onChange={(e) => setUsername(e.target.value)} 
                     placeholder="Username"
+                    className="bg-gray-900 w-full h-12 rounded-sm"
+                    required 
+                />
+                <input 
+                    type="text" 
+                    value={firstname} 
+                    name="firstname"
+                    onChange={(e) => setFirstname(e.target.value)} 
+                    placeholder="First Name"
+                    className="bg-gray-900 w-full h-12 rounded-sm"
+                    required 
+                />
+                <input 
+                    type="text" 
+                    value={lastname} 
+                    name="lastname"
+                    onChange={(e) => setLastname(e.target.value)} 
+                    placeholder="Last Name"
                     className="bg-gray-900 w-full h-12 rounded-sm"
                     required 
                 />
@@ -56,7 +79,7 @@ export default function SignUp() {
 
                 <p>Already have an account? <Link href="/auth/signin" className="underline">Sign In</Link></p>
 
-                <button type="submit" className="bg-white text-black rounded-md px-6 py-3 font-bold">Sign Up</button>
+                <button type="submit" className="bg-white text-black rounded-md px-6 py-3 font-bold cursor-pointer">Sign Up</button>
             </form>
         </section>
     )

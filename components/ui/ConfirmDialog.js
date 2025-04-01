@@ -17,10 +17,10 @@ export default function ConfirmDialog({
                 <h2 className="text-lg font-bold">{title}</h2>
                 <p className="mt-2">{message}</p>
                 <div className="flex justify-around mt-4">
-                    <button onClick={onClose} className="bg-gray-300 px-4 py-2 rounded">
+                    <button onClick={onClose} className="bg-gray-300 px-4 py-2 rounded cursor-pointer">
                         {cancelText}
                     </button>
-                    <button onClick={onConfirm} className="bg-red-500 text-white px-4 py-2 rounded">
+                    <button onClick={onConfirm} className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer">
                         {confirmText}
                     </button>
                 </div>

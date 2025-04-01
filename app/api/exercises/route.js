@@ -5,8 +5,8 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     await connectDB();
-    const { workout, name } = await req.json();
-    const exercise = new Exercise({ workout, name });
+    const { workout, name, type } = await req.json();
+    const exercise = new Exercise({ workout, name, type });
     await exercise.save();
     return NextResponse.json(exercise, { status: 201 });
   } catch (error) {
