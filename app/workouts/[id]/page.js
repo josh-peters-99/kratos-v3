@@ -5,7 +5,11 @@ import { fetchWorkout, updateWorkout, deleteWorkout } from "@/lib/api/workouts";
 import { fetchExercises, createExercise, deleteExercisesByWorkout } from "@/lib/api/exercises";
 import { deleteSetsByWorkout } from "@/lib/api/sets";
 import { useEffect, useState, useCallback } from "react";
-import ExerciseCard from "@/components/ui/workout/ExerciseCard";
+import WeightedLiftExerciseCard from "@/components/ui/workout/exercise-cards/WeightedLiftExerciseCard";
+import BodyweightExerciseCard from "@/components/ui/workout/exercise-cards/BodyweightExerciseCard";
+import TimedExerciseCard from "@/components/ui/workout/exercise-cards/TimedExerciseCard";
+import CardioExerciseCard from "@/components/ui/workout/exercise-cards/CardioExerciseCard";
+import ExerciseSelector from "@/components/ui/workout/selectors/ExerciseSelector";
 
 export default function EditWorkout() {
     const { id } = useParams(); // Get the dynamic ID from URL
@@ -13,6 +17,7 @@ export default function EditWorkout() {
     const [workout, setWorkout] = useState(null);
     const [maxDate, setMaxDate] = useState("");
     const [exercises, setExercises] = useState([]);
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
     useEffect(() => {
         if (!id) return; // Prevent fetching if id is undefined
@@ -86,10 +91,11 @@ export default function EditWorkout() {
         handleUpdateWorkout({ notes: newNote })
     }
 
-    const handleAddExercise = async () => {
+    const handleAddExercise = async (selectedExerciseType) => {
         try {
-            const newExercise = await createExercise({ workout: workout._id, name: "New Exercise" }); // Replace with appropriate default values
+            const newExercise = await createExercise({ workout: workout._id, name: "", type: selectedExerciseType }); // Replace with appropriate default values
             setExercises((prevExercises) => [...prevExercises, newExercise]);
+            setIsSelectorOpen(false);
         } catch (error) {
             console.error("Failed to create exercise:", error);
         }
@@ -143,17 +149,50 @@ export default function EditWorkout() {
 
                     <div className="pb-2 border-b border-gray-800">
                         <h1>Exercises</h1>
-                        {exercises.map((exercise, index) => (
-                            <div key={index}>
-                                <ExerciseCard workoutId={workout._id} exerciseName={exercise.name} exerciseId={exercise._id} />
-                            </div>
-                        ))}
+                        {exercises.map((exercise, index) => {
+                            let ExerciseCard;
+                            switch (exercise.type) {
+                                case "Weighted Lift":
+                                    ExerciseCard = WeightedLiftExerciseCard;
+                                    break;
+                                case "Bodyweight":
+                                    ExerciseCard = BodyweightExerciseCard;
+                                    break;
+                                case "Timed Exercise":
+                                    ExerciseCard = TimedExerciseCard;
+                                    break;
+                                case "Cardio":
+                                    ExerciseCard = CardioExerciseCard;
+                                    break;
+                                default:
+                                    return null;
+                            }
+
+                            return (
+                                <div key={index}>
+                                    <ExerciseCard
+                                        workoutId={workout._id}
+                                        exerciseName={exercise.name}
+                                        exerciseId={exercise._id}
+                                    />
+                                </div>
+                            )
+                            // <div key={index}>
+                            //     <WeightedLiftExerciseCard workoutId={workout._id} exerciseName={exercise.name} exerciseId={exercise._id} />
+                            // </div>
+                        })}
                         <div className="flex w-full justify-center mb-8">
-                            <button onClick={handleAddExercise} className="border px-3 py-2 rounded-sm cursor-pointer hover:bg-white hover:text-black">
+                            <button onClick={() => setIsSelectorOpen(true)} className="border px-3 py-2 rounded-sm cursor-pointer hover:bg-white hover:text-black">
                                 Add Exercise
                             </button>
                         </div>
                     </div>
+
+                    <ExerciseSelector
+                        isOpen={isSelectorOpen}
+                        onClose={() => setIsSelectorOpen(false)}
+                        onConfirm={handleAddExercise}
+                    />
 
                     <div className="mt-10 flex flex-col pb-10">
                         <label>Notes</label>

@@ -4,12 +4,17 @@ import { updateExercise } from "@/lib/api/exercises";
 import { useCallback, useState, useEffect } from "react";
 import { deleteExercise } from "@/lib/api/exercises";
 import { fetchSetsByExercise, createSet, deleteSet, updateSet } from "@/lib/api/sets";
-import SetRow from "./SetRow";
+import SetRow from "../set-rows/WeightedLiftSetRow";
+import ConfirmDialog from "../../ConfirmDialog";
+import SetRowSelector from "../selectors/SetRowSelector";
 
-export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
+export default function WeightedLiftExerciseCard({ workoutId, exerciseName, exerciseId }) {
     const [name, setName] = useState(exerciseName);
     const [sets, setSets] = useState([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
+    const [isSetSelectorOpen, setIsSetSelectorOpen] = useState(false);
 
     useEffect(() => {
         if (!exerciseId) return;
@@ -60,10 +65,15 @@ export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
         handleUpdateExercise({ name: newExerciseName });
     }
 
-    const handleAddSet = async () => {
+    const handleAddSet = async (selectedSetType) => {
         try {
-            const newSet = await createSet({ workout: workoutId, exercise: exerciseId, count: sets.length + 1, reps: 0, weight: 0 });
+            let newSet;
+            if (selectedSetType === "Warm Up Set") {
+                newSet = await createSet({ workout: workoutId, exercise: exerciseId, count: sets.length + 1, reps: 0, weight: 0, type: selectedSetType });
+            }
+            // const newSet = await createSet({ workout: workoutId, exercise: exerciseId, count: sets.length + 1, reps: 0, weight: 0, type: selectedSetType });
             setSets((prevSets) => [...prevSets, newSet]); // Add new set to state
+            setIsSetSelectorOpen(false);
         } catch (error) {
             console.error("Failed to add set:", error);
         }
@@ -95,8 +105,24 @@ export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
     };
 
     const handleDeleteExercise = async () => {
-        await deleteExercise(exerciseId);
+        try {
+            await deleteExercise(exerciseId);
+            setIsDeleted(true);
+        } catch (error) {
+            console.error("Failed to delete exercise:", error);
+        }
     }
+
+    const handleConfirm = () => {
+        handleDeleteExercise();
+        setIsDialogOpen(false);
+    };
+
+    const handleClose = () => {
+        setIsDialogOpen(false);
+    }
+
+    if (isDeleted) return null;
 
     return (
         <div className="mb-8">
@@ -105,7 +131,10 @@ export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
                     <div>
                         <div className="w-full flex justify-between items-center">
                             <label htmlFor="exerciseName" className="text-sm">Exercise Name:</label>
-                            <button onClick={handleDeleteExercise} className="text-sm text-red-400 cursor-pointer">
+                            <button onClick={() => {
+                                // handleDeleteExercise();
+                                setIsDialogOpen(true);
+                            }} className="text-sm text-red-400 cursor-pointer">
                                 Delete
                             </button>
                         </div>
@@ -134,28 +163,36 @@ export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
                     </div>
 
                     {dropdownOpen ? (
-                        <div className="mt-4">
-                            <div className="flex justify-between text-center w-full">
-                                <h3 className="w-1/4 text-sm">Set</h3>
-                                <h3 className="w-1/4 text-sm">Reps</h3>
-                                <h3 className="w-1/4 text-sm">Weight</h3>
-                                <h3 className="w-1/4 text-sm">Delete</h3>
+                        <div>
+                            <div className="mt-4">
+                                <div className="flex justify-between text-center w-full">
+                                    <h3 className="w-1/4 text-sm">Set</h3>
+                                    <h3 className="w-1/4 text-sm">Reps</h3>
+                                    <h3 className="w-1/4 text-sm">Weight</h3>
+                                    <h3 className="w-1/4 text-sm">Delete</h3>
+                                </div>
+                                <div className="mt-1">
+                                    {sets.map((set, index) => (
+                                        <div key={index}>
+                                            <SetRow setId={set._id} count={set.count} reps={set.reps} weight={set.weight} onDelete={() => handleDeleteSet(set._id)} onUpdate={handleUpdateSetInState} />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex w-full justify-center mt-5">
+                                    <button onClick={() => setIsSetSelectorOpen(true)} className="rounded-sm px-3 py-2 flex items-center border cursor-pointer text-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-4 mr-1">
+                                            <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                                        </svg>
+                                        <p>Add Set</p>
+                                    </button>
+                                </div>
                             </div>
-                            <div className="mt-1">
-                                {sets.map((set, index) => (
-                                    <div key={index}>
-                                        <SetRow setId={set._id} count={set.count} reps={set.reps} weight={set.weight} onDelete={() => handleDeleteSet(set._id)} onUpdate={handleUpdateSetInState} />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex w-full justify-center mt-5">
-                                <button onClick={handleAddSet} className="rounded-sm px-3 py-2 flex items-center border cursor-pointer text-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-4 mr-1">
-                                        <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-                                    </svg>
-                                    <p>Add Set</p>
-                                </button>
-                            </div>
+
+                            <SetRowSelector
+                                isOpen={isSetSelectorOpen}
+                                onClose={() => setIsSetSelectorOpen(false)}
+                                onConfirm={handleAddSet}
+                            />
                         </div>
                     ) : (
                         <span></span>
@@ -163,6 +200,19 @@ export default function ExerciseCard({ workoutId, exerciseName, exerciseId }) {
 
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                onConfirm={() => {
+                    // handleDeleteExercise();
+                    handleConfirm();
+                }}
+                title="Delete Exercise"
+                message="Are you sure you want to delete this exercise?"
+                confirmText="Delete"
+                cancelText="Cancel"
+            />
         </div>
     )
 }

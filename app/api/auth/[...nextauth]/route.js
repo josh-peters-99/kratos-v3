@@ -28,7 +28,7 @@ export const authOptions = {
                         throw new Error("Invalid username or password");
                     }
                     console.log("✅ Authentication successful");
-                    return { id: user._id, email: user.email, username: user.username };
+                    return { id: user._id, email: user.email, username: user.username, firstname: user.firstname, lastname: user.lastname };
                 } catch (error) {
                     console.error("🔥 Error in authorize function:", error);
                     console.log("An error occurred: ", error);
@@ -43,6 +43,8 @@ export const authOptions = {
                 token.id = user.id;
                 token.email = user.email;
                 token.username = user.username;
+                token.firstname = user.firstname;
+                token.lastname = user.lastname;
             }
             return token;
         },
@@ -50,6 +52,8 @@ export const authOptions = {
             if (session.user) {
                 session.user.id = token.id;
                 session.user.username = token.username;
+                session.user.firstname = token.firstname;
+                session.user.lastname = token.lastname;
             }
             return session;
         }
